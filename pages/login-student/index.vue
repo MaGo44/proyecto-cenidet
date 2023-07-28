@@ -22,7 +22,7 @@
                   Acceder
                 </v-btn>
               </NuxtLink>
-              <NuxtLink to="/">
+              <NuxtLink to="/request-student-account">
                 <v-col cols="12">
                   <span class="secondaryColor--text" style="cursor:pointer">No tengo una cuenta</span>
                 </v-col>
