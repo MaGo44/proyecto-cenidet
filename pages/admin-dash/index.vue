@@ -1,7 +1,7 @@
 <template>
     <v-container fluid>
         <v-row class="row-style">
-            HOLA
+            Hola mundo
         </v-row>
     </v-container>
 </template>

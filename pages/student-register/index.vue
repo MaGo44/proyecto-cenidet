@@ -43,35 +43,34 @@
                     <v-stepper-items class="textfields-form">
                         <v-stepper-content step="1">
                             <StudentPeriod
+                                :periods="periods"
                                 event-next-step="NEXT_STEP_REGISTER_COMPANY"
-                                event-modal-feedback="SHOW_MODAL_FEEDBACK"
-                                event-previous-step="PREVIOUS_STEP_REGISTER_COMPANY" />
+                                event-previous-step="PREVIOUS_STEP_REGISTER_COMPANY"
+                                @set-period="setPeriod" />
                         </v-stepper-content>
                         <v-stepper-content step="2">
                             <StudentInfo
-                                scrollable
+                                ref="studentInfoComponent"
+                                :careers="careers"
+                                :genders="genders"
+                                @set-student-info="setStudentInfo"
+                                @set-student-image="submitFiles"
                                 event-next-step="NEXT_STEP_REGISTER_COMPANY"
                                 event-previous-step="PREVIOUS_STEP_REGISTER_COMPANY" />
                         </v-stepper-content>
                         <v-stepper-content step="3">
                             <ProjectInfo
+                                :companies="companies"
+                                :advisers="advisers"
+                                @set-project-info="setProjectInfo"
                                 event-next-step="NEXT_STEP_REGISTER_COMPANY"
                                 event-previous-step="PREVIOUS_STEP_REGISTER_COMPANY" />
                         </v-stepper-content>
                         <v-stepper-content step="4">
-                            <StudentInfo
-                                :type-of-register="'Company'"
-                                :current-image="currentProfilePicture"
-                                event-next-step="NEXT_STEP_REGISTER_COMPANY"
-                                event-previous-step="PREVIOUS_STEP_REGISTER_COMPANY" />
-                        </v-stepper-content>
-                        <v-stepper-content step="5">
-                            <StudentInfo
-                                :type-of-register="'Company'"
-                                :register-payload="registerPart1"
-                                :company-register="registerPart2"
-                                event-next-step="NEXT_STEP_REGISTER_COMPANY"
-                                event-previous-step="PREVIOUS_STEP_REGISTER_COMPANY" />
+                            <StudentDocuments
+                              :student-id="registerStudentInfo.student_id"
+                              event-next-step="NEXT_STEP_REGISTER_COMPANY"
+                              event-previous-step="PREVIOUS_STEP_REGISTER_COMPANY" />
                         </v-stepper-content>
                     </v-stepper-items>
                 </v-stepper>
@@ -81,35 +80,36 @@
     </div>
 </template>
 <script>
+import axios from "axios";
 import StudentPeriod from "@/components/base/StudentPeriod"
 import StudentInfo from "@/components/base/StudentInfo"
 import ProjectInfo from "@/components/base/ProjectInfo"
+import StudentDocuments from "@/components/base/StudentDocuments"
 
 export default {
     components: {
     StudentPeriod,
     StudentInfo,
-    ProjectInfo
+    ProjectInfo,
+    StudentDocuments
   },
   layout: "internalLayout",
-  nuxtI18n: false,
-  // middleware: ['isAuthExternal'],
-  scrollToTop: true,
   data() {
     return {
+      token: '9260023c-3deb-4b2d-bb8d-bb595bbff9fc',
+      periods:[],
+      careers:[],
+      genders:[],
+      companies:[],
+      advisers:[],
       title: "Ayúdanos con algunos datos",
       subtitle: "Completa tu registro",
       textButton: "Crear empresa",
       textButtonFinish: "Guardar información",
-      registerForm: {
-        name: "",
-        first_surname: "",
-        second_surname: "",
-        gender: "",
-        sexual_orientation: "",
-        birthdate: "",
-        country_code: null,
-        location: "",
+      registerStudentInfo: {},
+      registerStudentProject: {
+        project_period:'',
+        student_id:null
       },
       activeStep: 1,
       step1: "Información de la empresa",
@@ -128,6 +128,71 @@ export default {
 //   },
 
   created() {
+    axios.get('http://localhost:3100/api/periods',{
+            headers:{
+                'authorization':`Bearer ${this.token}`
+            }
+        }).then((response)=>{
+            if(response.status === 200){
+                this.periods=response.data
+            }
+            else{
+            	console.log(response.status)
+            }
+        })
+
+        axios.get('http://localhost:3100/api/careers',{
+            headers:{
+                'authorization':`Bearer ${this.token}`
+            }
+        }).then((response)=>{
+            if(response.status === 200){
+                this.careers=response.data
+            }
+            else{
+            	console.log(response.status)
+            }
+        })
+
+        axios.get('http://localhost:3100/api/genders',{
+            headers:{
+                'authorization':`Bearer ${this.token}`
+            }
+        }).then((response)=>{
+            if(response.status === 200){
+                this.genders=response.data
+            }
+            else{
+            	console.log(response.status)
+            }
+        })
+
+        axios.get('http://localhost:3100/api/company_info',{
+            headers:{
+                'authorization':`Bearer ${this.token}`
+            }
+        }).then((response)=>{
+            if(response.status === 200){
+                this.companies=response.data
+            }
+            else{
+            	console.log(response.status)
+            }
+        })
+
+        axios.get('http://localhost:3100/api/internal_adviser_info',{
+            headers:{
+                'authorization':`Bearer ${this.token}`
+            }
+        }).then((response)=>{
+            if(response.status === 200){
+                this.advisers=response.data
+            }
+            else{
+            	console.log(response.status)
+            }
+        })
+      
     this.$nuxt.$on("NEXT_STEP_REGISTER_COMPANY", (_) => {
       this.activeStep++
     })
@@ -141,8 +206,49 @@ export default {
     this.$nuxt.$off("PREVIOUS_STEP_REGISTER_COMPANY")
   },
   methods: {
-    goToLogin() {
-      this.$router.push(this.localePath({ name: "login" }))
+    setPeriod(period){
+      this.registerStudentProject.project_period=period
+      console.log(this.registerStudentProject)
+    },
+    async setStudentInfo(studentInfo){
+      this.registerStudentInfo=studentInfo
+      await axios.post('http://localhost:3100/api/student_info', this.registerStudentInfo,{
+        headers:{
+          'authorization':`Bearer ${this.token}`,
+          'content-type': 'application/json'
+        }
+        }).then((response)=>{
+          if(response.status===200){
+            console.log(response.data.student_id);
+            this.registerStudentInfo=response.data
+            console.log(this.registerStudentInfo.student_id);
+            this.$refs.studentInfoComponent.submitFiles(this.registerStudentInfo.student_id);
+          } 
+          else{
+            console.log(response.status);
+          }
+        })
+      console.log(this.registerStudentInfo,'hola')
+    },
+    async setProjectInfo(projectInfo){
+      this.registerStudentProject.student_id=this.registerStudentInfo.student_id
+      for (const property in projectInfo) {
+        this.registerStudentProject[property] = projectInfo[property]
+      }
+      await axios.post('http://localhost:3100/api/student_project', this.registerStudentProject,{
+               headers:{
+                   'authorization':`Bearer ${this.token}`,
+                   'content-type': 'application/json'
+               }
+           }).then((response)=>{
+               if(response.status==="200"){
+                  console.log('Todo bien');
+               }
+               else{
+                console.log(response.status);
+               }
+           })
+      console.log(this.registerStudentProject)
     },
     nextStep() {
       this.activeStep += 1

@@ -7,10 +7,18 @@
                         <h2 class="primaryColor--text font-weight-regular">
                             Periodo
                         </h2>
-                        <v-form>
-                            <v-row>
+                        <v-form ref="form">
+                            <v-row class="mb-2">
                                 <v-col cols="12" class="pt-5 pb-0">
-                                    <v-text-field outlined label="Elige el periodo" />
+                                    <v-select 
+                                        v-model="project_period" 
+                                        :items="periods"
+                                        item-value="period_id"
+                                        item-text="period_name"
+                                        outlined 
+                                        required
+                                        :rules="[v => !!v || 'Este campo es requerido']"
+                                        label="Elige el periodo" />
                                 </v-col>
                             </v-row>
                             <v-btn
@@ -35,13 +43,23 @@ export default {
             type: String,
             required: true,
         },
+    periods: {
+            type: Array,
+            required: true,
+        },
     },
     data() {
-        
+        return{
+            project_period:null
+        }
     },
     methods:{
         nextStep() {
-            this.$nuxt.$emit(this.eventNextStep)
+            const valid=this.$refs.form.validate()
+            if(valid){
+                this.$emit('set-period',this.project_period)
+                this.$nuxt.$emit(this.eventNextStep)
+            }
         },
     }
 }

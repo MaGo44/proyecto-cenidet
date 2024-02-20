@@ -21,7 +21,7 @@
 			<v-col cols="12" class="pt-0">
 				<BaseDataTable
 					:headers="headers"
-					:items="persons"
+					:items="advisers"
 					:search="search"
 					:show-pagination="true"
 					:is-loading="loadingData"
@@ -210,332 +210,44 @@
 					<template #[`item.action`]="{ item }">
 						<div class="align-center d-flex">
 							<v-tooltip 
-								v-if="item.assignedAdmin != null && ($store.getters['auth/getAccountIdOriginal'] == null || item.attended != null && item.assignedAdmin.id == $store.getters['auth/getAdministratorId'])"
-								top 
+								top
+								class="mr-2"
 								content-class="custom-tooltip">
 								<template #activator="{ on }">
-									<v-btn  
-										x-small
-										icon
-										text
-										:ripple="false"
-										:loading="callApi" 
-										:disabled="callApi"
+									<v-icon 
 										v-on="on"
-										@click.prevent="goToRecommended(item)">
-										<!-- <img :src="require('~/assets/svg/contact_icon.svg')"> -->
-									</v-btn>
+										@click="openDialog(item)">
+										mdi-pencil
+									</v-icon>
 								</template>
-								<span>Ver empleos recomendados</span>
+								<span>Editar</span>
 							</v-tooltip>
-							<v-tooltip top content-class="custom-tooltip">
-								<template #activator="{ on }">
-									<v-btn
-										icon
-										v-on="on"
-										@click.prevent="goToProfile(item)">
-										<!-- <img :src="require('~/assets/svg/open_in_new_icon.svg')"> -->
-									</v-btn>
-								</template>
-								<span>Ver perfil</span>
-							</v-tooltip>					
 							<v-tooltip 
-								v-if="item.assignedAdmin != null && ($store.getters['auth/getAccountIdOriginal'] == null || item.attended != null && item.assignedAdmin.id == $store.getters['auth/getAdministratorId'])"
 								top 
 								content-class="custom-tooltip">
 								<template #activator="{ on }">
-									<v-avatar
-										tile
-										:size="18"
-										style="cursor: pointer;"
-										class="ml-2 mt-1"
-										@click.stop="openFeedbackDialog(item)"
-										v-on="on">
-										<!-- <img :src="require('~/assets/svg/feedback.svg')"> -->
-									</v-avatar>
-								</template>
-								<span>Comentarios</span>
-							</v-tooltip>
-							<v-tooltip
-								v-if="platformType != 'State' || (platformType == 'State' && $store.getters['auth/getAccountIdOriginal'] == null) || (platformType == 'State' &&
-									$store.getters['auth/getAccountIdOriginal'] != null && $store.getters['auth/getAdministratorTypeId'] == 1)"
-								content-class="custom-tooltip"
-								top>
-								<template #activator="{ on }">
-									<v-btn
-										icon
+									<v-icon 
 										v-on="on"
-										@click.prevent="reportUser(item)">
-										<!-- <img :src="require('~/assets/svg/report_icon.svg')"> -->
-									</v-btn>
+										@click.prevent="deleteAdviser(item.internal_adviser_id)">
+										mdi-trash-can
+									</v-icon>
 								</template>
-								<span>
-									Reportar usuario
-								</span>
+								<span>Eliminar</span>
 							</v-tooltip>
 						</div>
 					</template>
 				</BaseDataTable>
 			</v-col>
 		</v-row>
-		<base-dialog 
-			:is-open-dialog="downloadInfoDialog"
-			:title="titleDialog" 
-			width="350"
-			@close="closeDownloadInfoDialog()">
-			<template #sectionContent>
-				<v-row no-gutters justify="center">
-					<v-progress-circular
-						indeterminate
-						color="colorPrimary" />
-				</v-row>
-				<v-row no-gutters justify="center" class="pt-3">
-					<span class="item-text" style="text-align: center;">
-						Procesando información. La descarga comenzará automáticamente
-					</span>
-				</v-row>
-				<v-row no-gutters justify="center" class="pt-3">
-					<v-btn
-						color="colorPrimary"
-						small
-						class="font-weight-light text-none px14 px-2 whitePrimary--text"
-						@click.prevent="closeDownloadInfoDialog()">
-						Aceptar
-					</v-btn>
-				</v-row>
-			</template>
-			<template #sectionActions />
-		</base-dialog>
-		<base-dialog 
-			:is-open-dialog="contactInfoDialog"
-			title="Datos de contacto" 
-			width="450"
-			@close="closeContactInfoDialog()">
-			<template #sectionContent>
-				<v-row no-gutters class="pa-3 pb-0">
-					<span>
-						<span class="contact-info-text">
-							Estos son los datos de contacto de 
-						</span> 
-						<span 
-							
-							class="contact-info-text blackPrimary--text font-weight-medium">
-							{{ contactInfo.name }}
-						</span>
-					</span>
-				</v-row>
-				<v-row no-gutters class="pa-3">
-					<v-col
-						cols="1" 
-						class="flex-shrink-1 flex-grow-0"
-						style="max-width: 100%;">
-						<v-avatar
-							tile
-							:size="60"
-							class="mr-3">
-							<v-img
-								:src="profilePicturePath + contactInfo.institutionProfilePicutre" />
-						</v-avatar>
-					</v-col>
-					<v-col 
-						cols="1" 
-						style="max-width: 100%;"
-						class="flex-grow-1 flex-shrink-0">
-						<v-row no-gutters>
-							<span>
-								<span class="contact-info-title">
-									Nombre: 
-								</span>
-								<span class="contact-info-item">
-									{{ contactInfo.name != null && contactInfo.name != '' ? contactInfo.name : 'No disponible' }}
-								</span>
-							</span>
-						</v-row>
-						<v-row no-gutters>
-							<span>
-								<span class="contact-info-title">
-									Correo: 
-								</span>
-								<span class="contact-info-item">
-									{{ contactInfo.email != null && contactInfo.email != '' ? contactInfo.email : 'No disponible' }}
-								</span>
-							</span>
-						</v-row>
-						<v-row no-gutters>
-							<span>
-								<span class="contact-info-title">
-									Teléfono: 
-								</span>
-								<span class="contact-info-item">
-									{{ contactInfo.phone != null && contactInfo.phone != '' ? contactInfo.phone : 'No disponible' }}
-								</span>
-							</span>
-						</v-row>
-					</v-col>
-				</v-row>
-			</template>
-			<template #sectionActions />
-		</base-dialog>
-		<v-dialog
-			v-model="feedbackDialog"
-			max-width="500"
-			@input="closeFeedbackDialog()">
-			<v-card v-if="feedbackInfo != undefined" tile>
-				<v-card-title class="text-title pa-6 pb-0">
-					Comentarios
-					<v-spacer />
-					<div class="d-flex align-center">
-						<v-icon
-							small
-							color="#4F4F4F"
-							@click.prevent="closeFeedbackDialog()">
-							close
-						</v-icon>
-					</div>
-				</v-card-title>
-				<v-row no-gutters class="pa-6 pb-0">
-					<span>
-						<span class="contact-info-text">
-							Comentarios sobre
-						</span> 
-						<span 
-							:style="{ color: primaryColor }"
-							class="contact-info-text">
-							{{ feedbackInfo.personName }}
-						</span>
-					</span>
-				</v-row>
-				<div v-if="!isCreateFeedback && !isEditFeedback">
-					<v-row 
-						v-for="(item, index) in feedbackInfo.feedback" 
-						:key="index"
-						no-gutters 
-						class="pa-6 pb-0">
-						<v-col 
-							:cols="isEditFeedback || item.feedback == '' ? 12 : 11">
-							<v-row 
-								no-gutters
-								class="contact-info-feedback pt-1">
-								<span class="date-text">{{ getDateFeedback(item.createdAt) }} - {{ item.fullName }}</span>
-								<span v-if="!isEditFeedback && item.feedback != ''">
-									{{ item.feedback }}
-								</span>
-							</v-row>
-						</v-col>
-						<v-col v-if="(!isEditFeedback && item.feedback != '') && ($store.getters['auth/getAccountId'] == item.creatorAccountId)" cols="1">
-							<v-row
-								no-gutters
-								justify="end">
-								<v-icon
-									small
-									style="cursor: pointer;"
-									class="mt-1"
-									@click.prevent="openEditFeedback(index)">
-									edit
-								</v-icon>
-							</v-row>
-						</v-col>
-						<v-col
-							cols="12"
-							class="pt-4">
-							<v-divider v-if="index <= feedbackInfo.feedback.length - 1" />
-						</v-col>
-					</v-row>
-				</div>
-				<v-row 
-					v-if="isEditFeedback"
-					no-gutters 
-					class="pa-6 pt-3"
-					justify="end">
-					<v-btn 
-						:disabled="callApiFeedback"
-						tile
-						text
-						small
-						class="btn__nxt mr-4" 
-						color="#2f80ed"
-						@click.prevent="cancelEditAddFeedback()">
-						Cancelar
-					</v-btn> 
-					<v-btn  
-						:loading="callApiFeedback"
-						:disabled="callApiFeedback"
-						tile
-						small
-						color="#2f80ed"
-						class="white--text btn__nxt" 
-						@click.prevent="editFeedback()">
-						Guardar
-					</v-btn>
-				</v-row>
-				<v-row 
-					v-else-if="isCreateFeedback"
-					no-gutters 
-					class="pa-6 pt-3"
-					justify="end">
-					<v-btn 
-						:disabled="callApiFeedback"
-						tile
-						text
-						small
-						class="btn__nxt mr-4" 
-						color="#2f80ed"
-						@click.prevent="feedbackInfo.feedback.length == 0 ? closeFeedbackDialog() : cancelEditAddFeedback()">
-						Cancelar
-					</v-btn> 
-					<v-btn  
-						:loading="callApiFeedback"
-						:disabled="callApiFeedback"
-						tile
-						small
-						color="#2f80ed"
-						class="white--text btn__nxt" 
-						@click.prevent="createFeedback()">
-						Guardar
-					</v-btn>
-				</v-row>
-				<v-row 
-					v-else
-					no-gutters 
-					class="pa-6 pt-3"
-					justify="end">
-					<v-btn  
-						tile
-						small
-						color="#2f80ed"
-						class="white--text btn__nxt mt-3" 
-						@click.prevent="isCreateFeedback = true, isFirstComment = false">
-						Agregar
-					</v-btn>
-				</v-row>
-			</v-card>
-		</v-dialog>
-		<report-sended 
-			:open-dialog="openModalReportSended"
-			event-close-dialog="EVENT_CLOSE_REPORT_SENDED_MODAL" />
-		<report-user-modal
-			:open-report-dialog="openModalReportUser"
-			event-close-dialog="EVENT_CLOSE_REPORT_USER_MODAL"
-			event-send-report="EVENT_SEND_USER_REPORT" />
 		<snackBar :color="snackColor" :snackbar="snackbar" :text="snackText" event-hide="HIDE_SNACKBAR_MODULE_DETAILS" />
-		<modal
-			:open-modal="openModalInfo"
-			:close-modal="closeModalEvent"
-			:icon="iconModal"
-			:title="titleModal"
-			:info="infoModal"
-			:is-persistent="isPersistentModal"
-			:buttons="buttonsModal"
-			:events="eventsModal"
-			:modal-width="500"
-			:button-colors="buttonsColorModal" /> 
-		<personPreview
-			:open-dialog="openModalPersonDetail"
-			:is-loading="callApiPersonPreview"
-			:job="selectedPerson"
-			event-open-modal-contact-info="OPEN_CONTACT_INFO_MODAL_PERSONS_LIST"
-			event-open-report-publication="EVENT_OPEN_REPORT_PUBLICATION_MODAL_PERSONS_LIST"
-			event-close-modal="CLOSE_MODAL_PERSON_DETAIL_PERSONS_LIST" />
+		<EditAdviser
+			:is-open-dialog="openEdition"
+			:adviser="selectedAdviser"
+			:genders="genders"
+			:studies="studies"
+			:careers="careersForm"
+			title="Editar asesor" 
+			width="550" />
 		<!-- <v-dialog
 			v-model="downloadInfoDialog"
 			max-width="350"
@@ -566,14 +278,19 @@
 	</v-container>
 </template>
 <script>
+import axios from "axios";
+import EditAdviser from '@/components/base/Editors/EditAdviser'
 import BaseDataTable from '@/components/base/Admin/BaseDataTable'
 export default {
     components:{
 		BaseDataTable,
+		EditAdviser
 	},
 	layout: "adminLayout",
 	data() {
 		return {
+			openEdition:false,
+			advisers:[],
             careerSelected:0,
 			careers:[
 				{
@@ -620,16 +337,16 @@ export default {
 			isEnabled:true,
 			persons: [
                 {
-                    internal_adviser_name:'Santiago Robles',
-					adscription_career:'Industrial',
+                    internal_name:'Santiago Robles',
+					career_name:'Industrial',
 					internal_email:'santi@gmail.com',
-					internal_tel:'6574848896'
+					internal_phone:'6574848896'
                 },
 				{
-                    internal_adviser_name:'Pamela Rodriguez',
-					adscription_career:'Sistemas computacionales',
+                    internal_name:'Pamela Rodriguez',
+					career_name:'Sistemas computacionales',
 					internal_email:'pam@gmail.com',
-					internal_tel:'5567895706'
+					internal_phone:'5567895706'
                 }
             ],
 			personsCsv: [],
@@ -638,7 +355,7 @@ export default {
 					text: 'Nombre',
 					align: 'start',
 					sortable: true,
-					value: 'internal_adviser_name',
+					value: 'internal_name',
 					title: 'Nombre',
 					dataKey: "name",
 					selected: false
@@ -647,9 +364,9 @@ export default {
 					text: 'Carrera de adscripción',
 					align: 'start',
 					sortable: true,
-					value: 'adscription_career',
+					value: 'career_name',
 					title: 'Nombre',
-					dataKey: "adscription_career",
+					dataKey: "internal_adscription_career",
 					selected: false
 				},
 				{
@@ -664,9 +381,9 @@ export default {
 					text: 'Telefono',
 					align: 'start',
 					sortable: true,
-					value: 'internal_tel',
+					value: 'internal_phone',
 					title: 'Empresa',
-					dataKey: "internal_tel",
+					dataKey: "internal_phone",
 					selected: false
 				},
 				{
@@ -680,8 +397,6 @@ export default {
 			openModalReportUser: false,
 			openModalReportSended: false,
 			accountId: null,
-			careAboutType: 0,
-			seeAssistProfiles: 0,
 			showFilters: false,
 			subaccounts: [],
 			selectedSubaccounts: [],
@@ -701,8 +416,6 @@ export default {
 				feedbackEdit: '',
 				accountId : '',
 			},
-			isEditFeedback: false,
-			callApiFeedback: false,
 			snackbar: false,
 			snackText: "",
 			snackColor: "",
@@ -754,6 +467,11 @@ export default {
 			filterMaxAge: 80,
 			specialFieldsServer: [],
 			emailVerified: null,
+			token: "9260023c-3deb-4b2d-bb8d-bb595bbff9fc",
+			selectedAdviser:{},
+			genders:[],
+			studies:[],
+			careersForm:[]
 		}
 	},
 	watch: {
@@ -771,9 +489,81 @@ export default {
 			this.getPersons(false, val.page, val.itemsPerPage, this.searchKey, false)
 		},
 	},
-	created() {     
+	created() {  
+        this.getAdvisers()
+		axios.get('https://proyecto-cenidet-backend-production.up.railway.app/api/genders',{
+            headers:{
+                'authorization':`Bearer ${this.token}`
+            }
+        }).then((response)=>{
+            if(response.status === 200){
+                this.genders=response.data
+            }
+            else{
+            	console.log(response.status)
+            }
+        })
+
+        axios.get('https://proyecto-cenidet-backend-production.up.railway.app/api/scholar_grades',{
+            headers:{
+                'authorization':`Bearer ${this.token}`
+            }
+        }).then((response)=>{
+            if(response.status === 200){
+                this.studies=response.data
+            }
+            else{
+            	console.log(response.status)
+            }
+        })
+
+        axios.get('https://proyecto-cenidet-backend-production.up.railway.app/api/careers',{
+            headers:{
+                'authorization':`Bearer ${this.token}`
+            }
+        }).then((response)=>{
+            if(response.status === 200){
+                this.careersForm=response.data
+            }
+            else{
+            	console.log(response.status)
+            }
+        })
     },
 	methods: {
+		openDialog(adviser){
+			console.log(adviser,'adviser')
+			this.selectedAdviser=adviser
+			this.openEdition=true
+		},
+		getAdvisers(){
+			axios.get('http://localhost:3100/api/internal_adviser_info',{
+				headers:{
+					'authorization':`Bearer ${this.token}`
+				}
+			}).then((response)=>{
+				if(response.status === 200){
+					this.advisers=response.data
+				}
+				else{
+					console.log(response.status)
+				}
+			})     
+		},
+		deleteAdviser(id){
+			axios.delete(`http://localhost:3100//api/internal_adviser_info/${id}`, {
+				headers:{
+					'authorization':`Bearer ${this.token}`
+				}
+			}).then((response)=>{
+				if(response.status === 204){
+					this.getAdvisers()
+				}
+				else{
+					console.log(response.status)
+				}
+			}) 
+		},
 		toPage(id) {
 			this.$router.push({
 				name: this.pagesOptions[id].to

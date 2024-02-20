@@ -1,15 +1,24 @@
 <template>
-    <div class="container_main" style="height: 100%">
-        <v-container>
-        <v-row align="center" justify="center" class="margin-row container_main">
-            <v-col>
-                <v-card>
-                    <v-col class="pt-5"> 
-                        <h2 class="font-weight-regular">
-                            Registro de unidad económica
-                        </h2>
-                        <v-form>
-                            <v-row>
+                    <v-dialog
+                        :value="openDialogLocal"
+                        :width="width" 
+                        :persistent="$vuetify.breakpoint.smAndUp"
+                        :fullscreen="$vuetify.breakpoint.xsOnly" 
+                        :hide-overlay="$vuetify.breakpoint.xsOnly">
+                        <v-card class="card-border-rounded pa-2">
+                        <v-card-title class="text-title pa-6 pb-0">
+                            Editar unidad económica
+                            <v-spacer />
+                            <div class="d-flex align-center">
+                                <v-icon
+                                    small
+                                    color="#4F4F4F"
+                                    @click.prevent="closeDialog()">
+                                    mdi-close
+                                </v-icon>
+                            </div>
+                        </v-card-title>
+                            <v-row no-gutters class="pa-6 pb-0">
                                 <v-col cols="12" class="pb-0 mt-5">
                                     <v-text-field 
                                         v-model="companyForm.company_name"
@@ -81,7 +90,7 @@
                                         outlined 
                                         required
                                         :rules="[v => !!v || 'Este campo es requerido']"
-                                        label="Numero exterior" />
+                                        label="Número exterior" />
                                 </v-col>
                                 <v-col cols="6" class="pb-0 pt-0">
                                     <v-text-field 
@@ -136,9 +145,9 @@
                                 </v-col>
                                 <v-col cols="2" class="pb-0 pt-0">
                                     <v-text-field 
-                                        v-model="companyForm.company_tel_ext" 
+                                        v-model.number="companyForm.company_tel_ext" 
                                         outlined 
-                                        label="Extension" />
+                                        label="Extensión" />
                                 </v-col>
                                 <v-col cols="6" class="pb-0 pt-0">
                                     <v-text-field 
@@ -208,7 +217,7 @@
                                 </v-col>
                                 <v-col cols="6" class="pb-0 pt-0">
                                     <v-text-field 
-                                        v-model="companyForm.company_vacants_number"  
+                                        v-model.number="companyForm.company_vacants_number"  
                                         outlined 
                                         required
                                         :rules="[v => !!v || 'Este campo es requerido']"
@@ -223,89 +232,90 @@
                                         label="Observaciones" />
                                 </v-col>
                             </v-row>
-                            <v-btn
-                                width="20%"
-                                outlined
-                                color="#2CA58D"
-                                class="border-rounded text-none"
-                                @click="saveCompany()">
-                                    Guardar
-                            </v-btn>
-                        </v-form>
-                    </v-col>
-                </v-card>
-            </v-col>
-        </v-row>
-    </v-container>
-    </div>
+                            <v-card-actions>
+                                <v-spacer></v-spacer>
+                                <v-btn
+                                    width="20%"
+                                    outlined
+                                    color="#2CA58D"
+                                    class="border-rounded text-none"
+                                    @click="editCompany()">
+                                        Guardar
+                                </v-btn>
+                            </v-card-actions>
+                    </v-card>
+                </v-dialog>
 </template>
 <script>
-import axios from "axios";
 export default {
-    layout: "adminLayout",
-    data() {
-        return{
-            token: '9260023c-3deb-4b2d-bb8d-bb595bbff9fc',
-            studies:[],
-            menu: false,
-            agreement_status:[],
-            companyForm:{}
-        }
+  props: {
+    title: {
+      type: String,
+      required: true
     },
+    width: {
+      type: String,
+      required: true
+    },
+    company: {
+      type: Object,
+      required: true
+    },
+    careers: {
+        type: Array,
+        required: true,
+    },
+    agreement_status: {
+        type: Array,
+        required: true,
+    },
+   studies: {
+        type: Array,
+        required: true,
+    },
+    isOpenDialog: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+  },
+  data () {
+		return {
+			openDialogLocal: this.isOpenDialog,
+            companyForm: {},
+		}
+	},
+	watch: {
+		isOpenDialog (value) {
+			this.openDialogLocal = value
+            if(value===true){
+                this.companyForm=this.company
+            }
+		}
+	},
     created(){
-        axios.get('http://localhost:3100/api/scholar_grades',{
-            headers:{
-                'authorization':`Bearer ${this.token}`
-            }
-        }).then((response)=>{
-            if(response.status === 200){
-                this.studies=response.data
-            }
-            else{
-            	console.log(response.status)
-            }
-        })
-
-        axios.get('http://localhost:3100/api/agreement_status',{
-            headers:{
-                'authorization':`Bearer ${this.token}`
-            }
-        }).then((response)=>{
-            if(response.status === 200){
-                this.agreement_status=response.data
-            }
-            else{
-            	console.log(response.status)
-            }
-        })  
+        // console.log(this.adviser,'holaaa')
+        // this.adviserForm=this.adviser
+        // console.log(this.adviserForm,'holaaa')
     },
-    methods:{
-        async saveCompany(){
-           await axios.post('http://localhost:3100/api/company_info', this.companyForm,{
-               headers:{
-                   'authorization':`Bearer ${this.token}`,
-                   'content-type': 'application/json'
-               }
-           }).then((response)=>{
-               if(response.status==="200"){
-                  console.log('Todo bien');
-               }
-               else{
-                console.log(response.status);
-               }
-           })
+	methods: {
+        editCompany(){
+            // Clonar el objeto companyForm para evitar modificar el original
+            const editedCompanyForm = Object.assign({}, this.companyForm);
+            // Convertir el formato de la fecha si es necesario
+            if (editedCompanyForm.company_agreement_date) {
+                const fecha = new Date(editedCompanyForm.company_agreement_date);
+                editedCompanyForm.company_agreement_date = fecha.toISOString().split('T')[0];
+            }
+            // Emitir el objeto modificado
+            this.$emit('edit-company', editedCompanyForm);
+            this.closeDialog();
+        },
+        closeDialog(){
+            this.openDialogLocal = false
+            this.$emit('close-dialog')
+            this.companyForm={}
         }
     }
 }
 </script>
-<style scoped>
-.margin-row {
-  margin: 0 10%;
-}
-.title-form {
-  margin: 0 5%;
-}
-.textfields-form {
-  margin: 0 15%;
-}
-</style>

@@ -1,13 +1,14 @@
 <template>
-    <div class="row-style">
-        <v-row align="center" justify="center" class="row-margin">
-            <v-col cols="12">
+    <div class="container_main" style="height: 100%">
+        <v-container>
+        <v-row align="center" justify="center" class="margin-row container_main">
+            <v-col>
                 <v-card>
                     <v-col class="pt-5"> 
                         <h2 class="primaryColor--text font-weight-regular">
-                            Datos del estudiante
+                            Registro de estudiante
                         </h2>
-                        <v-form ref="form">
+                        <v-form>
                             <v-row>
                                 <v-col cols="12" class="text-center pt-5 d-flex align-center">
                                     <v-card
@@ -26,9 +27,20 @@
                                 <v-col cols="12">
                                     <input ref="fileInput" type="file" @input="pickFile">
                                 </v-col>
-                                <v-col cols="12" class="pb-0">
+                                <v-col cols="6" class="pb-0 pt-0">
+                                    <v-select
+                                        v-model="studentForm.student_period_id" 
+                                        :items="periods"
+                                        item-value="period_id"
+                                        item-text="period_name"
+                                        outlined 
+                                        required
+                                        :rules="[v => !!v || 'Este campo es requerido']"
+                                        label="Periodo" />
+                                </v-col>
+                                <v-col cols="12" class="pb-0 pt-0">
                                     <v-text-field
-                                        v-model="registerStudentInfo.student_name"  
+                                        v-model="studentForm.student_name"  
                                         outlined 
                                         label="Nombre"
                                         required
@@ -36,7 +48,7 @@
                                 </v-col>
                                 <v-col cols="6" class="pb-0 pt-0">
                                     <v-text-field 
-                                        v-model="registerStudentInfo.student_last_name"  
+                                        v-model="studentForm.student_last_name"  
                                         outlined 
                                         label="Apellido paterno"
                                         required
@@ -44,7 +56,7 @@
                                 </v-col>
                                 <v-col cols="6" class="pb-0 pt-0">
                                     <v-text-field 
-                                        v-model="registerStudentInfo.student_second_last_name"  
+                                        v-model="studentForm.student_second_last_name"  
                                         outlined 
                                         label="Apellido materno"
                                         required
@@ -52,7 +64,7 @@
                                 </v-col>
                                 <v-col cols="6" class="pb-0 pt-0">
                                     <v-text-field 
-                                        v-model="registerStudentInfo.student_control_num"  
+                                        v-model="studentForm.student_control_num"  
                                         outlined 
                                         label="No.Control"
                                         required
@@ -60,7 +72,7 @@
                                 </v-col>
                                 <v-col cols="6" class="pb-0 pt-0">
                                     <v-text-field 
-                                        v-model="registerStudentInfo.student_curp"  
+                                        v-model="studentForm.student_curp"  
                                         outlined 
                                         label="CURP"
                                         required
@@ -68,7 +80,7 @@
                                 </v-col>
                                 <v-col cols="6" class="pb-0 pt-0">
                                     <v-select
-                                        v-model="registerStudentInfo.student_career_id"  
+                                        v-model="studentForm.student_career_id"  
                                         outlined 
                                         :items="careers"
                                         item-value="career_id"
@@ -79,7 +91,7 @@
                                 </v-col>
                                 <v-col cols="6" class="pb-0 pt-0">
                                     <v-select
-                                        v-model="registerStudentInfo.student_sex_id"  
+                                        v-model="studentForm.student_sex_id"  
                                         outlined 
                                         :items="genders"
                                         item-value="gender_id"
@@ -90,7 +102,7 @@
                                 </v-col>
                                 <v-col cols="12" class="pb-0 pt-0">
                                     <v-text-field 
-                                        v-model="registerStudentInfo.student_email"  
+                                        v-model="studentForm.student_email"  
                                         outlined 
                                         label="Correo institucional"
                                         required
@@ -98,7 +110,7 @@
                                 </v-col>
                                 <v-col cols="12" class="pb-0 pt-0">
                                     <v-text-field 
-                                        v-model="registerStudentInfo.student_second_email" 
+                                        v-model="studentForm.student_second_email" 
                                         outlined 
                                         label="Correo personal"
                                         required
@@ -106,7 +118,7 @@
                                 </v-col>
                                 <v-col cols="6" class="pb-0 pt-0">
                                     <v-text-field 
-                                        v-model="registerStudentInfo.student_phone" 
+                                        v-model="studentForm.student_phone" 
                                         outlined 
                                         maxlength="10"
                                         label="Telefono fijo"
@@ -115,7 +127,7 @@
                                 </v-col>
                                 <v-col cols="6" class="pb-0 pt-0">
                                     <v-text-field 
-                                        v-model="registerStudentInfo.student_cel_phone" 
+                                        v-model="studentForm.student_cel_phone" 
                                         outlined 
                                         maxlength="10"
                                         label="Telefono celular"
@@ -124,7 +136,7 @@
                                 </v-col>
                                 <v-col cols="3" class="pb-0 pt-0">
                                     <v-text-field 
-                                        v-model="registerStudentInfo.student_avg" 
+                                        v-model="studentForm.student_avg" 
                                         outlined 
                                         label="Promedio"
                                         required
@@ -133,7 +145,7 @@
                                 </v-col>
                                 <v-col cols="3" class="pb-0 pt-0">
                                     <v-text-field 
-                                        v-model="registerStudentInfo.student_credits" 
+                                        v-model="studentForm.student_credits" 
                                         outlined 
                                         label="Creditos acum"
                                         required
@@ -141,7 +153,7 @@
                                 </v-col>
                                 <v-col cols="3" class="pb-0 pt-0">
                                     <v-text-field 
-                                        v-model="registerStudentInfo.student_semester" 
+                                        v-model="studentForm.student_semester" 
                                         outlined 
                                         maxlength="2"
                                         label="Semestre"
@@ -150,137 +162,126 @@
                                 </v-col>
                                 <v-col cols="3" class="pb-0 pt-0">
                                     <v-text-field 
-                                        v-model="registerStudentInfo.student_studies_code" 
+                                        v-model="studentForm.student_studies_code" 
                                         outlined 
                                         label="Clave plan de estudios"
                                         required
                                         :rules="[v => !!v || 'Este campo es requerido']" />
                                 </v-col>
+                                
                             </v-row>
                             <v-btn
-                                block
+                                width="20%"
                                 outlined
                                 color="#2CA58D"
                                 class="border-rounded text-none"
-                                @click="nextStep()">
-                                Siguiente
+                                @click="saveInternalAdviser()">
+                                    Guardar
                             </v-btn>
                         </v-form>
                     </v-col>
                 </v-card>
             </v-col>
         </v-row>
+    </v-container>
     </div>
 </template>
 <script>
 import axios from "axios";
 export default {
-    props: {
-        eventNextStep: {
-            type: String,
-            required: true,
-        },
-        careers: {
-            type: Array,
-            required: true,
-        },
-        genders: {
-            type: Array,
-            required: true,
-        },
-    },
+    layout: "adminLayout",
     data() {
         return{
-            registerStudentInfo:{},
-            fotoPerfil: null,
             token: '9260023c-3deb-4b2d-bb8d-bb595bbff9fc',
+            periods:[],
+            genders:[],
+            studies:[],
+            careers:[],
+            studentForm:{}
         }
     },
+    created(){
+        axios.get('http://localhost:3100/api/periods',{
+            headers:{
+                'authorization':`Bearer ${this.token}`
+            }
+        }).then((response)=>{
+            if(response.status === 200){
+                this.periods=response.data
+            }
+            else{
+            	console.log(response.status)
+            }
+        })
+
+        axios.get('http://localhost:3100/api/genders',{
+            headers:{
+                'authorization':`Bearer ${this.token}`
+            }
+        }).then((response)=>{
+            if(response.status === 200){
+                this.genders=response.data
+            }
+            else{
+            	console.log(response.status)
+            }
+        })
+
+        axios.get('http://localhost:3100/api/scholar_grades',{
+            headers:{
+                'authorization':`Bearer ${this.token}`
+            }
+        }).then((response)=>{
+            if(response.status === 200){
+                this.studies=response.data
+            }
+            else{
+            	console.log(response.status)
+            }
+        })
+
+        axios.get('http://localhost:3100/api/careers',{
+            headers:{
+                'authorization':`Bearer ${this.token}`
+            }
+        }).then((response)=>{
+            if(response.status === 200){
+                this.careers=response.data
+            }
+            else{
+            	console.log(response.status)
+            }
+        })
+
+
+    },
     methods:{
-        nextStep() {
-            const valid=this.$refs.form.validate()
-            if(valid){
-                this.$emit('set-student-info',this.registerStudentInfo)
-                
-                this.$nuxt.$emit(this.eventNextStep)
-            }
-            // this.$emit('set-student-info',this.registerStudentInfo)
-            //     this.$nuxt.$emit(this.eventNextStep)
-        },
-        selectImage () {
-          this.$refs.fileInput.click()
-        },
-        pickFile() {
-            const input = this.$refs.fileInput;
-            const file = input.files;
-
-            if (file && file[0]) {
-                const reader = new FileReader();
-
-                reader.onload = (e) => {
-                    this.fotoPerfil = e.target.result;
-                    this.registerStudentInfo.file_name = file[0].name; // Guardar el nombre del archivo
-                };
-
-                reader.readAsDataURL(file[0]);
-                this.$emit('input', file[0]);
-            }
-        },
-        async submitFiles(studentId) {
-        await console.log(studentId,'llego');
-        try {
-            const formData = new FormData();
-            formData.append('student_id', studentId);
-
-            const fileData = this.fotoPerfil;
-
-            if (fileData) {
-                // Convertir los datos base64 en un objeto de tipo Blob
-                const blob = await fetch(fileData).then(res => res.blob());
-
-                formData.append('document_type_id', 1);
-                formData.append('profile_pic_file_name', this.registerStudentInfo.file_name);
-                formData.append('alias', this.registerStudentInfo.file_name);
-                formData.append('fotoPerfil', blob, this.registerStudentInfo.file_name);
-
-                console.log(formData);
-
-                // Envía el formData al backend utilizando una solicitud HTTP (por ejemplo, utilizando Axios)
-                const response = await axios.post(
-                    'http://localhost:3100/api/student_profile_pic',
-                    formData,
-                    {
-                        headers: {
-                            authorization: `Bearer ${this.token}`,
-                            'content-type': 'multipart/form-data',
-                        },
-                    }
-                );
-
-                if (response.status === 200) {
-                    console.log('Archivo subido exitosamente:', response.data);
-                } else {
-                    console.log('Error al subir archivo:', response.status);
-                }
-            }
-        } catch (error) {
-            console.error('Error al subir archivos:', error);
+        async saveInternalAdviser(){
+           await axios.post('http://localhost:3100/api/internal_adviser_info', this.studentForm,{
+               headers:{
+                   'authorization':`Bearer ${this.token}`,
+                   'content-type': 'application/json'
+               }
+           }).then((response)=>{
+               if(response.status==="200"){
+                  console.log('Todo bien');
+               }
+               else{
+                console.log(response.status);
+               }
+           })
         }
-        },
     }
 }
 </script>
 <style scoped>
-h1 {
-  color:#361D2E;
+.margin-row {
+  margin: 0 10%;
 }
-.row-style {
-  background-color: #F8F7FF;
+.title-form {
+  margin: 0 5%;
 }
-.primaryColor--text{
-  color:#E07A5F;
-}
-.secondaryColor--text{
-  color:#2CA58D;
+.textfields-form {
+  margin: 0 15%;
 }
 </style>

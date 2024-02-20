@@ -1,31 +1,40 @@
 <template>
     <div class="content-style" align="center">
-        <v-row align="center" class="row-style">
+          <v-row class="mb-5 mt-7" justify="center">
+            <v-col cols="12">
+              <h1 class="h1-style">Selecciona tu perfil:</h1>
+            </v-col>
+          </v-row>
+          <v-row>
             <v-col cols="6">
-            <v-card class="card-style" @click="goToPage('login-student')">
-              <v-col align="center">
-                <v-row class="text-center"> 
-                Soy estudiante
-              </v-row>
-                <v-icon size="250">
-                    mdi-account
-                </v-icon>
-              </v-col>
-            </v-card>
+              <v-card class="card-style" @click="goToPage('login-student')">
+                <v-col align="center" class="mt-5">
+                  <v-row justify="center"> 
+                    <div>
+                      Soy estudiante
+                    </div>
+                  </v-row>
+                  <v-icon size="250">
+                      mdi-account-school
+                  </v-icon>
+                </v-col>
+              </v-card>
             </v-col>
             <v-col cols="6">
-            <v-card class="card-style" @click="goToPage('login-admin')">
-              <v-col align="center">
-                <v-row class="text-center">
-                Soy administrador
-              </v-row>
-                <v-icon size="250">
-                    mdi-account
-                </v-icon>
-              </v-col>
-            </v-card>
+              <v-card class="card-style" @click="goToPage('login-admin')">
+                <v-col align="center" class="mt-5">
+                  <v-row justify="center">
+                    <div>
+                      Soy administrador
+                    </div>
+                </v-row>
+                  <v-icon size="250">
+                      mdi-account
+                  </v-icon>
+                </v-col>
+              </v-card>
             </v-col>
-        </v-row>
+          </v-row>
     </div>
 </template>
 
@@ -46,12 +55,11 @@ export default {
 
 <style scoped>
 h1.h1-style {
-  font-size: 80px;
+  font-size: 27px;
   color:#361D2E;
 }
 .content-style {
-  background-color: #F8F7FF;
-  height: 500px;
+  height: 100%;
 }
 .row-style{
     margin: 0 10%;
@@ -63,6 +71,10 @@ h1.h1-style {
   color:#2CA58D;
 }
 .card-style{
-  width: 500px;
+  width: 400px;
+  height:300px;
+  display: flex;
+  justify-content: center; /* Centrar horizontalmente */
+  align-items: center;
 }
 </style>

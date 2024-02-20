@@ -9,7 +9,7 @@
     </v-col>
     <v-col cols="6">
       <v-card>
-        <v-col class="pt-5 ml-5"> 
+        <v-col class="pt-5" style="padding:0 5%; width:100%"> 
           <h2 class="primaryColor--text">
           Accede a la plataforma
           </h2>
@@ -49,6 +49,7 @@ h1.h1-style {
 }
 .row-style {
   background-color: #F8F7FF;
+  height: 100%;
 }
 .primaryColor--text{
   color:#E07A5F;

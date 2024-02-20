@@ -7,7 +7,7 @@
 			<v-col cols="12" class="pt-0">
 				<BaseDataTable
 					:headers="headers"
-					:items="persons"
+					:items="students"
 					:search="search"
 					:show-pagination="true"
 					:is-loading="loadingData"
@@ -461,6 +461,7 @@
 	</v-container>
 </template>
 <script>
+import axios from "axios";
 import BaseDataTable from '@/components/base/Admin/BaseDataTable'
 export default {
     components:{
@@ -498,22 +499,7 @@ export default {
 			},
 			search: '',
 			isEnabled:true,
-			persons: [
-                {
-                    student_name:'Paola Gomez',
-					report1:true,
-					report2:false,
-					report3:false,
-					report4:false,
-                },
-				{
-                    student_name:'Demian Sanchez',
-					report1:true,
-					report2:true,
-					report3:true,
-					report4:false,
-                }
-            ],
+			students: [],
 			personsCsv: [],
 			headers: [
 				{
@@ -662,7 +648,21 @@ export default {
 			this.getPersons(false, val.page, val.itemsPerPage, this.searchKey, false)
 		},
 	},
-	created() {     
+	created() {  
+		axios.get('http://localhost:3100/api/student_info_admin',{
+            headers:{
+                'authorization':`Bearer ${this.token}`
+            }
+        }).then((response)=>{
+            if(response.status === 200){
+				console.log(response.data)
+                this.students=response.data
+				console.log(this.students)
+            }
+            else{
+            	console.log(response.status)
+            }
+        })        
     },
 	methods: {
 		toPage(id) {

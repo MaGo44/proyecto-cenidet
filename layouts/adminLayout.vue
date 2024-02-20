@@ -9,7 +9,7 @@
 			:permanent="$vuetify.breakpoint.mdAndUp"
 			expand-on-hover>
 			<v-list dense>
-				<v-subheader class="justify-center mt-5 mb-5">
+				<!-- <v-subheader class="justify-center mt-5 mb-5">
 					<img
 						v-show="!miniVariant"
 						:src="logoColorSiga"
@@ -20,7 +20,7 @@
 						:src="logoOnlySiga"
 						:aspect-ratio="16 / 9"
 						:height="$vuetify.breakpoint.sm && platform != 'TP' && platform != 'TN' ? 50 : platform != 'TP' && platform != 'TN' ? 50 : 42">
-				</v-subheader>
+				</v-subheader> -->
 				<v-list-group
 					v-for="item in items"
 					:key="item.text"
@@ -86,13 +86,13 @@
 				class="ml-0 pl-4">
 				<v-app-bar-nav-icon color="colorPrimary" @click.stop="drawer = true" />
 			</v-toolbar-title>
-			<img
+			<!-- <img
 				v-show="$vuetify.breakpoint.smAndUp"
 				:src="logoColorSiga"
 				:aspect-ratio="16 / 9"
 				class="ml-5"
 				:height="$vuetify.breakpoint.sm && platform != 'TP' && platform != 'TN' ? 35 : platform != 'TP' && platform != 'TN' ? 42 : 42">
-			<v-spacer />
+			<v-spacer /> -->
 			<v-tooltip top content-class="custom-toolti">
 				<template v-slot:activator="{ on}">
 					<v-avatar
@@ -185,7 +185,7 @@ export default {
 					},
 					{
 						name: 'Registro',
-						to: 'company-register'
+						to: 'register-student'
 					},
 				]
 			})

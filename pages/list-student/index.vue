@@ -64,7 +64,7 @@
 			<v-col cols="12" class="pt-0">
 				<BaseDataTable
 					:headers="headers"
-					:items="persons"
+					:items="filteredStudents"
 					:search="search"
 					:show-pagination="true"
 					:is-loading="loadingData"
@@ -76,6 +76,18 @@
 					download-csv="EVENT_DOWNLOAD_CSV_PERSONS"
 					download-pdf="EVENT_DOWNLOAD_PDF_PERSONS"
 					height="calc(100vh - 300px)">
+					<template #[`item.profile_pic`]="{ item }">
+						<div class="d-flex align-center py-2">
+							<span>
+								<span>
+									<img :src="'/Users/owner/Downloads/' + item.alias" alt="Profile Image">
+								</span>
+								<!-- <v-chip v-if="getDays(item) && (item.attended == 0 || item.attended == null)" class="ma-0 px-2 chip-new" x-small color="turquoisePrimary">
+									Nuevo
+								</v-chip> -->
+							</span>
+						</div>
+					</template>
 					<template #[`item.name`]="{ item }">
 						<div class="d-flex align-center py-2">
 							<span>
@@ -86,6 +98,40 @@
 									Nuevo
 								</v-chip> -->
 							</span>
+						</div>
+					</template>
+					<template #[`item.student_last_name`]="{ item }">
+						<div class="d-flex align-center py-2">
+							<span>
+								<span>
+									{{ item.student_last_name }} {{ item.student_second_last_name }}
+								</span>
+								<!-- <v-chip v-if="getDays(item) && (item.attended == 0 || item.attended == null)" class="ma-0 px-2 chip-new" x-small color="turquoisePrimary">
+									Nuevo
+								</v-chip> -->
+							</span>
+						</div>
+					</template>
+					<template #[`item.student_sex_id`]="{ item }">
+						<div class="d-flex align-center py-2">
+							<span>
+								<span v-if="item.student_sex_id===1">
+									Hombre
+								</span>
+								<span v-else>
+									Mujer
+								</span>
+								<!-- <v-chip v-if="getDays(item) && (item.attended == 0 || item.attended == null)" class="ma-0 px-2 chip-new" x-small color="turquoisePrimary">
+									Nuevo
+								</v-chip> -->
+							</span>
+						</div>
+					</template>
+					<template #[`item.student_career`]="{ item }">
+						<div class="d-flex align-center py-2">
+								<span>
+									{{ item.career_name }}
+								</span>
 						</div>
 					</template>
 					<template #[`item.project_name`]="{ item }">
@@ -175,7 +221,6 @@
 									return-object
 									dense
 									hide-selected
-									:color="primaryColor"
 									append-icon="expand_more"
 									item-text="name"
 									class="br-0"
@@ -253,74 +298,55 @@
 					<template #[`item.action`]="{ item }">
 						<div class="align-center d-flex">
 							<v-tooltip 
-								v-if="item.assignedAdmin != null && ($store.getters['auth/getAccountIdOriginal'] == null || item.attended != null && item.assignedAdmin.id == $store.getters['auth/getAdministratorId'])"
-								top 
+								top
+								class="mr-2"
 								content-class="custom-tooltip">
 								<template #activator="{ on }">
-									<v-btn  
-										x-small
-										icon
-										text
-										:ripple="false"
-										:loading="callApi" 
-										:disabled="callApi"
+									<v-icon 
 										v-on="on"
-										@click.prevent="goToRecommended(item)">
-										<!-- <img :src="require('~/assets/svg/contact_icon.svg')"> -->
-									</v-btn>
+										@click.prevent="open(item)">
+										mdi-pencil
+									</v-icon>
 								</template>
-								<span>Ver empleos recomendados</span>
+								<span>Editar</span>
 							</v-tooltip>
-							<v-tooltip top content-class="custom-tooltip">
-								<template #activator="{ on }">
-									<v-btn
-										icon
-										v-on="on"
-										@click.prevent="goToProfile(item)">
-										<!-- <img :src="require('~/assets/svg/open_in_new_icon.svg')"> -->
-									</v-btn>
-								</template>
-								<span>Ver perfil</span>
-							</v-tooltip>					
 							<v-tooltip 
-								v-if="item.assignedAdmin != null && ($store.getters['auth/getAccountIdOriginal'] == null || item.attended != null && item.assignedAdmin.id == $store.getters['auth/getAdministratorId'])"
 								top 
 								content-class="custom-tooltip">
 								<template #activator="{ on }">
-									<v-avatar
-										tile
-										:size="18"
-										style="cursor: pointer;"
-										class="ml-2 mt-1"
-										@click.stop="openFeedbackDialog(item)"
-										v-on="on">
-										<!-- <img :src="require('~/assets/svg/feedback.svg')"> -->
-									</v-avatar>
-								</template>
-								<span>Comentarios</span>
-							</v-tooltip>
-							<v-tooltip
-								v-if="platformType != 'State' || (platformType == 'State' && $store.getters['auth/getAccountIdOriginal'] == null) || (platformType == 'State' &&
-									$store.getters['auth/getAccountIdOriginal'] != null && $store.getters['auth/getAdministratorTypeId'] == 1)"
-								content-class="custom-tooltip"
-								top>
-								<template #activator="{ on }">
-									<v-btn
-										icon
+									<v-icon 
 										v-on="on"
-										@click.prevent="reportUser(item)">
-										<!-- <img :src="require('~/assets/svg/report_icon.svg')"> -->
-									</v-btn>
+										@click.prevent="deleteDialog=true">
+										mdi-trash-can
+									</v-icon>
 								</template>
-								<span>
-									Reportar usuario
-								</span>
+								<span>Eliminar</span>
 							</v-tooltip>
 						</div>
 					</template>
 				</BaseDataTable>
 			</v-col>
 		</v-row>
+		<v-dialog
+			v-model="deleteDialog"
+			width="30%"
+			>
+			<v-card>
+				<v-card-title>
+					¿Desea continuar?
+				</v-card-title>
+				<v-row justify="center" align="center" class="mt-3 mb-3">
+					<v-icon color="yellow" size="100px">
+					mdi-alert-circle-outline
+					</v-icon>
+				</v-row>
+				<v-card-actions>
+					<v-spacer></v-spacer>
+					<v-btn color="primary" text @click="deleteDialog = false">Cancelar</v-btn>
+					<v-btn color="primary" @click="closeDownloadInfoDialog()">Eliminar</v-btn>
+				</v-card-actions>
+			</v-card>
+		</v-dialog>
 		<base-dialog 
 			:is-open-dialog="downloadInfoDialog"
 			:title="titleDialog" 
@@ -345,76 +371,6 @@
 						@click.prevent="closeDownloadInfoDialog()">
 						Aceptar
 					</v-btn>
-				</v-row>
-			</template>
-			<template #sectionActions />
-		</base-dialog>
-		<base-dialog 
-			:is-open-dialog="contactInfoDialog"
-			title="Datos de contacto" 
-			width="450"
-			@close="closeContactInfoDialog()">
-			<template #sectionContent>
-				<v-row no-gutters class="pa-3 pb-0">
-					<span>
-						<span class="contact-info-text">
-							Estos son los datos de contacto de 
-						</span> 
-						<span 
-							
-							class="contact-info-text blackPrimary--text font-weight-medium">
-							{{ contactInfo.name }}
-						</span>
-					</span>
-				</v-row>
-				<v-row no-gutters class="pa-3">
-					<v-col
-						cols="1" 
-						class="flex-shrink-1 flex-grow-0"
-						style="max-width: 100%;">
-						<v-avatar
-							tile
-							:size="60"
-							class="mr-3">
-							<v-img
-								:src="profilePicturePath + contactInfo.institutionProfilePicutre" />
-						</v-avatar>
-					</v-col>
-					<v-col 
-						cols="1" 
-						style="max-width: 100%;"
-						class="flex-grow-1 flex-shrink-0">
-						<v-row no-gutters>
-							<span>
-								<span class="contact-info-title">
-									Nombre: 
-								</span>
-								<span class="contact-info-item">
-									{{ contactInfo.name != null && contactInfo.name != '' ? contactInfo.name : 'No disponible' }}
-								</span>
-							</span>
-						</v-row>
-						<v-row no-gutters>
-							<span>
-								<span class="contact-info-title">
-									Correo: 
-								</span>
-								<span class="contact-info-item">
-									{{ contactInfo.email != null && contactInfo.email != '' ? contactInfo.email : 'No disponible' }}
-								</span>
-							</span>
-						</v-row>
-						<v-row no-gutters>
-							<span>
-								<span class="contact-info-title">
-									Teléfono: 
-								</span>
-								<span class="contact-info-item">
-									{{ contactInfo.phone != null && contactInfo.phone != '' ? contactInfo.phone : 'No disponible' }}
-								</span>
-							</span>
-						</v-row>
-					</v-col>
 				</v-row>
 			</template>
 			<template #sectionActions />
@@ -572,13 +528,10 @@
 			:events="eventsModal"
 			:modal-width="500"
 			:button-colors="buttonsColorModal" /> 
-		<personPreview
-			:open-dialog="openModalPersonDetail"
-			:is-loading="callApiPersonPreview"
-			:job="selectedPerson"
-			event-open-modal-contact-info="OPEN_CONTACT_INFO_MODAL_PERSONS_LIST"
-			event-open-report-publication="EVENT_OPEN_REPORT_PUBLICATION_MODAL_PERSONS_LIST"
-			event-close-modal="CLOSE_MODAL_PERSON_DETAIL_PERSONS_LIST" />
+		<EditAdviser
+			:is-open-dialog="openEdition"
+			title="Editar asesor" 
+			width="350" />
 		<!-- <v-dialog
 			v-model="downloadInfoDialog"
 			max-width="350"
@@ -609,46 +562,28 @@
 	</v-container>
 </template>
 <script>
+import axios from "axios";
+import EditAdviser from '@/components/base/Editors/EditAdviser'
 import BaseDataTable from '@/components/base/Admin/BaseDataTable'
 export default {
     components:{
 		BaseDataTable,
+		EditAdviser
 	},
 	layout: "adminLayout",
 	data() {
 		return {
+			token: '9260023c-3deb-4b2d-bb8d-bb595bbff9fc',
+			openEdition:false,
+			deleteDialog:false,
+			students:[],
+			idSelected: null,
 			genderSelected:0,
-			genders:[
-				{
-					gender_id:0,
-					gender_name:'Todos los sexos'
-				}
-			],
-			periodSelected:{
-				period_id:0,
-				period_name:'FEBRERO-DICIEMBRE 2020'
-			},
-			periods:[
-				{
-					period_id:0,
-					period_name:'FEBRERO-DICIEMBRE 2020'
-				}
-			],
+			genders:[],
+			periodSelected:0,
+			periods:[],
 			careerSelected:0,
-			careers:[
-				{
-					career_id:0,
-					career_name:'Todas las carreras'
-				},
-				{
-					career_id:1,
-					career_name:'Industrial'
-				},
-				{
-					career_id:2,
-					career_name:'Sistemas computacionales'
-				},
-			],
+			careers:[],
 			pageSelected: 0,
 			pagesOptions: [
 				{
@@ -678,31 +613,20 @@ export default {
 			},
 			search: '',
 			isEnabled:true,
-			persons: [
-                {
-                    student_name:'Paola Gomez',
-					student_gender:'Mujer',
-					project_period:'FEBRERO-DICIEMBRE 2020',
-					project_name:'Cenidet',
-					company_name:'Tec',
-					student_career:'Sistemas computacionales',
-					student_status:'Activo'
-                },
-				{
-                    student_name:'Demian Sanchez',
-					student_gender:'Hombre',
-					project_period:'FEBRERO-DICIEMBRE 2020',
-					project_name:'Cenidet',
-					company_name:'Tec',
-					student_career:'Industrial',
-					student_status:'Activo'
-                }
-            ],
 			personsCsv: [],
 			headers: [
 				{
-					text: 'Nombre',
+					text: 'Foto',
 					align: 'start',
+					sortable: true,
+					value: 'profile_pic',
+					title: 'Foto',
+					dataKey: "profile_pic",
+					selected: false
+				},
+				{
+					text: 'Nombre',
+					align: 'center',
 					sortable: true,
 					value: 'student_name',
 					title: 'Nombre',
@@ -710,17 +634,26 @@ export default {
 					selected: false
 				},
 				{
-					text: 'Sexo',
-					align: 'start',
+					text: 'Apellido',
+					align: 'center',
 					sortable: true,
-					value: 'student_gender',
+					value: 'student_last_name',
+					title: 'Apellido',
+					dataKey: "student_last_name",
+					selected: false
+				},
+				{
+					text: 'Sexo',
+					align: 'center',
+					sortable: true,
+					value: 'student_sex_id',
 					title: 'Sexo',
-					dataKey: "student_gender",
+					dataKey: "student_sex_id",
 					selected: false
 				},
 				{
 					text: 'Carrera',
-					align: 'start',
+					align: 'center',
 					sortable: true,
 					value: 'student_career',
 					title: 'Nombre',
@@ -729,16 +662,16 @@ export default {
 				},
 				{
 					text: 'Periodo',
-					align: 'start',
+					align: 'center',
 					sortable: true,
-					value: 'project_period',
+					value: 'period_name',
 					title: 'Periodo',
-					dataKey: "project_period",
+					dataKey: "period_name",
 					selected: false
 				},
 				{
 					text: 'Nombre del proyecto',
-					align: 'start',
+					align: 'center',
 					value: 'project_name',
 					title: 'Nombre del proyecto',
 					dataKey: "student_name",
@@ -746,7 +679,7 @@ export default {
 				},
 				{
 					text: 'Unidad economica',
-					align: 'start',
+					align: 'center',
 					sortable: true,
 					value: 'company_name',
 					title: 'Empresa',
@@ -755,7 +688,7 @@ export default {
 				},
 				{
 					text: 'Vigencia',
-					align: 'start',
+					align: 'center',
 					sortable: true,
 					value: 'student_status',
 					title: 'Empresa',
@@ -849,6 +782,18 @@ export default {
 			emailVerified: null,
 		}
 	},
+	computed: {
+		filteredStudents() {
+		// Filtrar estudiantes según los filtros seleccionados
+		return this.students.filter((student) => {
+			return (
+			(!this.careerSelected || student.career_id === this.careerSelected) &&
+			(!this.periodSelected || student.period_id === this.periodSelected.period_id) &&
+			(!this.genderSelected || student.student_sex_id === this.genderSelected)
+			);
+		});
+		},
+	},
 	watch: {
 		currentPage(value){
 			this.currentPage = value
@@ -864,7 +809,64 @@ export default {
 			this.getPersons(false, val.page, val.itemsPerPage, this.searchKey, false)
 		},
 	},
-	created() {     
+	created() {
+        axios.get('http://localhost:3100/api/careers',{
+            headers:{
+                'authorization':`Bearer ${this.token}`
+            }
+        }).then((response)=>{
+            if(response.status === 200){
+				console.log(response.data)
+                this.careers=response.data
+				console.log(this.careers)
+            }
+            else{
+            	console.log(response.status)
+            }
+        })  
+		axios.get('http://localhost:3100/api/periods',{
+            headers:{
+                'authorization':`Bearer ${this.token}`
+            }
+        }).then((response)=>{
+            if(response.status === 200){
+				console.log(response.data)
+                this.periods=response.data
+				console.log(this.periods)
+            }
+            else{
+            	console.log(response.status)
+            }
+        })  
+		axios.get('http://localhost:3100/api/genders',{
+            headers:{
+                'authorization':`Bearer ${this.token}`
+            }
+        }).then((response)=>{
+            if(response.status === 200){
+				console.log(response.data)
+                this.genders=response.data
+				console.log(this.genders)
+            }
+            else{
+            	console.log(response.status)
+            }
+        })        
+		axios.get('http://localhost:3100/api/student_info_admin',{
+            headers:{
+                'authorization':`Bearer ${this.token}`
+            }
+        }).then((response)=>{
+            if(response.status === 200){
+				console.log(response.data)
+				console.log(this.persons)
+                this.students=response.data
+				console.log(this.students)
+            }
+            else{
+            	console.log(response.status)
+            }
+        })     
     },
 	methods: {
 		toPage(id) {
@@ -872,17 +874,6 @@ export default {
 				name: this.pagesOptions[id].to
 			})
 		},
-		// openContactInfoDialog(item) {
-		// 	this.contactInfo.name = item.name
-		// 	this.contactInfo.email = item.email
-		// 	this.contactInfo.phone = item.phone
-		// 	this.contactInfo.institutionProfilePicutre = item.profilePicutre
-            
-		// 	this.contactInfoDialog = true
-		// },
-		// closeContactInfoDialog() {
-		// 	this.contactInfoDialog = false
-		// },
 		goToProfile(item) {
 			this.callApiPersonPreview = true
 			this.openModalPersonDetail = true

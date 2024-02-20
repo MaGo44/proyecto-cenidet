@@ -7,7 +7,7 @@
 			<v-col cols="12" class="pt-0">
 				<BaseDataTable
 					:headers="headers"
-					:items="persons"
+					:items="companies"
 					:search="search"
 					:show-pagination="true"
 					:is-loading="loadingData"
@@ -61,110 +61,8 @@
 							<span>{{ item.email == '' || item.email == null ? 'Correo no proporcionado' : item.email }}</span>
 						</div>
 					</template>
-					<template v-slot:[`item.emailVerified`]="{ item }">
-						<div class="d-flex align-center py-2">
-							<v-chip 
-								class="border-rounded px14 font-weight-medium"
-								outlined
-								:color="item.emailVerified == 1 ? 'success' : 'neutral1Primary'">
-								{{ item.emailVerified == 1 ? 'Verificado' : 'No verificado' }}
-							</v-chip>
-						</div>
-					</template>
 					<template v-slot:[`item.phone`]="{ item }">
 						<span>{{ item.phone }}</span>
-					</template>
-					<template v-slot:[`item.adminAccountId`]="{ item }">
-						<div class="d-flex align-center py-2">
-							<v-avatar
-								v-if="item.adminAccountId != null && item.adminName != ''"
-								tile
-								:size="30"
-								class="mr-2">
-								<v-img
-									:src="profilePicturePath + item.adminProfilePicture" />
-							</v-avatar>
-							<span 
-								v-if="item.adminAccountId != null && item.adminName != ''">
-								{{ item.adminName }}
-							</span>
-							<span v-else>Registro propio</span>
-						</div>
-					</template>
-					<template v-slot:[`item.subaccount`]="{ item }">
-						<div 
-							v-if="item.assignedAdmin != null && !item.callApiSubaccount && item.assignedAdmin.id ==
-								$store.getters['auth/getAdministratorId']" 
-							class="d-flex align-center py-2">
-							<v-avatar
-								tile
-								:size="30"
-								class="mr-2">
-								<v-img
-									:src="profilePicturePath + item.subaccountImage" />
-							</v-avatar>
-							{{ item.subaccountName }}
-						</div>
-						<div v-else>
-							<div v-if="!item.callApiSubaccount" class="pa-3">
-								<span 
-									v-if="$store.getters['auth/getAdministratorTypeId'] == 1"
-									class="link-hover"
-									@click.prevent="changeSubaccount(item)">
-									Asignarme
-								</span>
-								<v-select
-									v-else-if="$store.getters['auth/getAdministratorTypeId'] == null"
-									v-model="item.assignedAdmin"
-									:items="subaccounts"
-									hide-details
-									item-value="id"
-									return-object
-									dense
-									hide-selected
-									:color="primaryColor"
-									append-icon="expand_more"
-									item-text="name"
-									class="br-0"
-									@input="changeSubaccount(item)">
-									<template v-slot:selection="{ item }">
-										<div class="d-flex align-center py-2">
-											<v-avatar
-												tile
-												:size="30"
-												class="mr-2">
-												<v-img
-													:src="profilePicturePath + item.profilePicture" />
-											</v-avatar>
-											<span class="px14 font-weight-medium">{{ item.name }}</span>
-										</div>
-									</template>
-									<template v-slot:item="{ item }">
-										<template>
-											<v-list-item-content>
-												<v-list-item-title>
-													<div class="d-flex align-center py-2">
-														<v-avatar
-															tile
-															:size="30"
-															class="mr-2">
-															<v-img
-																:src="profilePicturePath + item.profilePicture" />
-														</v-avatar>
-														<span class="px14 font-weight-medium">{{ item.name }}</span>
-													</div>
-												</v-list-item-title>
-											</v-list-item-content>
-										</template>
-									</template>
-								</v-select>
-							</div>
-							<v-icon 
-								v-else
-								small>
-								fas fa-circle-notch fa-spin
-							</v-icon>
-						</div>
 					</template>
 					<template v-slot:[`item.status`]="{ item }">
 						<div v-if="!item.callApiAttended" class="text-center pa-3 pt-6">
@@ -200,74 +98,87 @@
 					<template v-slot:[`item.action`]="{ item }">
 						<div class="align-center d-flex">
 							<v-tooltip 
-								v-if="item.assignedAdmin != null && ($store.getters['auth/getAccountIdOriginal'] == null || item.attended != null && item.assignedAdmin.id == $store.getters['auth/getAdministratorId'])"
-								top 
+								top
+								class="mr-2"
 								content-class="custom-tooltip">
-								<template v-slot:activator="{ on }">
-									<v-btn  
-										x-small
-										icon
-										text
-										:ripple="false"
-										:loading="callApi" 
-										:disabled="callApi"
+								<template #activator="{ on }">
+									<v-icon 
 										v-on="on"
-										@click.prevent="goToRecommended(item)">
-										<!-- <img :src="require('~/assets/svg/contact_icon.svg')"> -->
-									</v-btn>
+										@click="openDialog(item)">
+										mdi-pencil
+									</v-icon>
 								</template>
-								<span>Ver empleos recomendados</span>
+								<span>Editar</span>
 							</v-tooltip>
-							<v-tooltip top content-class="custom-tooltip">
-								<template v-slot:activator="{ on }">
-									<v-btn
-										icon
-										v-on="on"
-										@click.prevent="goToProfile(item)">
-										<!-- <img :src="require('~/assets/svg/open_in_new_icon.svg')"> -->
-									</v-btn>
-								</template>
-								<span>Ver perfil</span>
-							</v-tooltip>					
 							<v-tooltip 
-								v-if="item.assignedAdmin != null && ($store.getters['auth/getAccountIdOriginal'] == null || item.attended != null && item.assignedAdmin.id == $store.getters['auth/getAdministratorId'])"
 								top 
 								content-class="custom-tooltip">
-								<template v-slot:activator="{ on }">
-									<v-avatar
-										tile
-										:size="18"
-										style="cursor: pointer;"
-										class="ml-2 mt-1"
-										@click.stop="openFeedbackDialog(item)"
-										v-on="on">
-										<!-- <img :src="require('~/assets/svg/feedback.svg')"> -->
-									</v-avatar>
-								</template>
-								<span>Comentarios</span>
-							</v-tooltip>
-							<v-tooltip
-								v-if="platformType != 'State' || (platformType == 'State' && $store.getters['auth/getAccountIdOriginal'] == null) || (platformType == 'State' &&
-									$store.getters['auth/getAccountIdOriginal'] != null && $store.getters['auth/getAdministratorTypeId'] == 1)"
-								content-class="custom-tooltip"
-								top>
-								<template v-slot:activator="{ on }">
-									<v-btn
-										icon
+								<template #activator="{ on }">
+									<v-icon 
 										v-on="on"
-										@click.prevent="reportUser(item)">
-										<!-- <img :src="require('~/assets/svg/report_icon.svg')"> -->
-									</v-btn>
+										@click.prevent="deleteCompany(item.company_id)">
+										mdi-trash-can
+									</v-icon>
 								</template>
-								<span>
-									Reportar usuario
-								</span>
+								<span>Eliminar</span>
+							</v-tooltip>
+							<v-tooltip 
+								top 
+								content-class="custom-tooltip">
+								<template #activator="{ on }">
+									<v-icon 
+										v-on="on"
+										@click.prevent="openOverviewDialog(item)">
+										mdi-domain
+									</v-icon>
+								</template>
+								<span>Ver unidad</span>
 							</v-tooltip>
 						</div>
 					</template>
 				</BaseDataTable>
 			</v-col>
 		</v-row>
+		<v-dialog
+			v-model="editDialog"
+			width="50%"
+			>
+			<v-card>
+				<v-card-title>
+					¿Desea continuar?
+				</v-card-title>
+				<v-row justify="center" align="center" class="mt-3 mb-3">
+					<v-icon color="yellow" size="100px">
+					mdi-alert-circle-outline
+					</v-icon>
+				</v-row>
+				<v-card-actions>
+					<v-spacer></v-spacer>
+					<v-btn color="primary" text @click="deleteDialog = false">Cancelar</v-btn>
+					<v-btn color="primary" @click="closeDownloadInfoDialog()">Eliminar</v-btn>
+				</v-card-actions>
+			</v-card>
+		</v-dialog>
+		<v-dialog
+			v-model="deleteDialog"
+			width="30%"
+			>
+			<v-card>
+				<v-card-title>
+					¿Desea continuar?
+				</v-card-title>
+				<v-row justify="center" align="center" class="mt-3 mb-3">
+					<v-icon color="yellow" size="100px">
+					mdi-alert-circle-outline
+					</v-icon>
+				</v-row>
+				<v-card-actions>
+					<v-spacer></v-spacer>
+					<v-btn color="primary" text @click="deleteDialog = false">Cancelar</v-btn>
+					<v-btn color="primary" @click="closeDownloadInfoDialog()">Eliminar</v-btn>
+				</v-card-actions>
+			</v-card>
+		</v-dialog>
 		<base-dialog 
 			:is-open-dialog="downloadInfoDialog"
 			:title="titleDialog" 
@@ -296,218 +207,98 @@
 			</template>
 			<template #sectionActions />
 		</base-dialog>
-		<base-dialog 
-			:is-open-dialog="contactInfoDialog"
-			title="Datos de contacto" 
-			width="450"
-			@close="closeContactInfoDialog()">
-			<template #sectionContent>
-				<v-row no-gutters class="pa-3 pb-0">
-					<span>
-						<span class="contact-info-text">
-							Estos son los datos de contacto de 
-						</span> 
-						<span 
-							
-							class="contact-info-text blackPrimary--text font-weight-medium">
-							{{ contactInfo.name }}
-						</span>
-					</span>
-				</v-row>
-				<v-row no-gutters class="pa-3">
-					<v-col
-						cols="1" 
-						class="flex-shrink-1 flex-grow-0"
-						style="max-width: 100%;">
-						<v-avatar
-							tile
-							:size="60"
-							class="mr-3">
-							<v-img
-								:src="profilePicturePath + contactInfo.institutionProfilePicutre" />
-						</v-avatar>
-					</v-col>
-					<v-col 
-						cols="1" 
-						style="max-width: 100%;"
-						class="flex-grow-1 flex-shrink-0">
-						<v-row no-gutters>
-							<span>
-								<span class="contact-info-title">
-									Nombre: 
-								</span>
-								<span class="contact-info-item">
-									{{ contactInfo.name != null && contactInfo.name != '' ? contactInfo.name : 'No disponible' }}
-								</span>
-							</span>
-						</v-row>
-						<v-row no-gutters>
-							<span>
-								<span class="contact-info-title">
-									Correo: 
-								</span>
-								<span class="contact-info-item">
-									{{ contactInfo.email != null && contactInfo.email != '' ? contactInfo.email : 'No disponible' }}
-								</span>
-							</span>
-						</v-row>
-						<v-row no-gutters>
-							<span>
-								<span class="contact-info-title">
-									Teléfono: 
-								</span>
-								<span class="contact-info-item">
-									{{ contactInfo.phone != null && contactInfo.phone != '' ? contactInfo.phone : 'No disponible' }}
-								</span>
-							</span>
-						</v-row>
-					</v-col>
-				</v-row>
-			</template>
-			<template #sectionActions />
-		</base-dialog>
-		<v-dialog
-			v-model="feedbackDialog"
-			max-width="500"
-			@input="closeFeedbackDialog()">
-			<v-card v-if="feedbackInfo != undefined" tile>
-				<v-card-title class="text-title pa-6 pb-0">
-					Comentarios
-					<v-spacer />
-					<div class="d-flex align-center">
-						<v-icon
-							small
-							color="#4F4F4F"
-							@click.prevent="closeFeedbackDialog()">
-							close
-						</v-icon>
-					</div>
-				</v-card-title>
-				<v-row no-gutters class="pa-6 pb-0">
-					<span>
-						<span class="contact-info-text">
-							Comentarios sobre
-						</span> 
-						<span 
-							:style="{ color: primaryColor }"
-							class="contact-info-text">
-							{{ feedbackInfo.personName }}
-						</span>
-					</span>
-				</v-row>
-				<div v-if="!isCreateFeedback && !isEditFeedback">
-					<v-row 
-						v-for="(item, index) in feedbackInfo.feedback" 
-						:key="index"
-						no-gutters 
-						class="pa-6 pb-0">
-						<v-col 
-							:cols="isEditFeedback || item.feedback == '' ? 12 : 11">
-							<v-row 
-								no-gutters
-								class="contact-info-feedback pt-1">
-								<span class="date-text">{{ getDateFeedback(item.createdAt) }} - {{ item.fullName }}</span>
-								<span v-if="!isEditFeedback && item.feedback != ''">
-									{{ item.feedback }}
-								</span>
-							</v-row>
-						</v-col>
-						<v-col v-if="(!isEditFeedback && item.feedback != '') && ($store.getters['auth/getAccountId'] == item.creatorAccountId)" cols="1">
-							<v-row
-								no-gutters
-								justify="end">
-								<v-icon
-									small
-									style="cursor: pointer;"
-									class="mt-1"
-									@click.prevent="openEditFeedback(index)">
-									edit
-								</v-icon>
-							</v-row>
-						</v-col>
-						<v-col
-							cols="12"
-							class="pt-4">
-							<v-divider v-if="index <= feedbackInfo.feedback.length - 1" />
-						</v-col>
-					</v-row>
-				</div>
-				<v-row 
-					v-if="isEditFeedback"
-					no-gutters 
-					class="pa-6 pt-3"
-					justify="end">
-					<v-btn 
-						:disabled="callApiFeedback"
-						tile
-						text
-						small
-						class="btn__nxt mr-4" 
-						color="#2f80ed"
-						@click.prevent="cancelEditAddFeedback()">
-						Cancelar
-					</v-btn> 
-					<v-btn  
-						:loading="callApiFeedback"
-						:disabled="callApiFeedback"
-						tile
-						small
-						color="#2f80ed"
-						class="white--text btn__nxt" 
-						@click.prevent="editFeedback()">
-						Guardar
-					</v-btn>
-				</v-row>
-				<v-row 
-					v-else-if="isCreateFeedback"
-					no-gutters 
-					class="pa-6 pt-3"
-					justify="end">
-					<v-btn 
-						:disabled="callApiFeedback"
-						tile
-						text
-						small
-						class="btn__nxt mr-4" 
-						color="#2f80ed"
-						@click.prevent="feedbackInfo.feedback.length == 0 ? closeFeedbackDialog() : cancelEditAddFeedback()">
-						Cancelar
-					</v-btn> 
-					<v-btn  
-						:loading="callApiFeedback"
-						:disabled="callApiFeedback"
-						tile
-						small
-						color="#2f80ed"
-						class="white--text btn__nxt" 
-						@click.prevent="createFeedback()">
-						Guardar
-					</v-btn>
-				</v-row>
-				<v-row 
-					v-else
-					no-gutters 
-					class="pa-6 pt-3"
-					justify="end">
-					<v-btn  
-						tile
-						small
-						color="#2f80ed"
-						class="white--text btn__nxt mt-3" 
-						@click.prevent="isCreateFeedback = true, isFirstComment = false">
-						Agregar
-					</v-btn>
-				</v-row>
-			</v-card>
-		</v-dialog>
-		<report-sended 
-			:open-dialog="openModalReportSended"
-			event-close-dialog="EVENT_CLOSE_REPORT_SENDED_MODAL" />
-		<report-user-modal
-			:open-report-dialog="openModalReportUser"
-			event-close-dialog="EVENT_CLOSE_REPORT_USER_MODAL"
-			event-send-report="EVENT_SEND_USER_REPORT" />
 		<snackBar :color="snackColor" :snackbar="snackbar" :text="snackText" event-hide="HIDE_SNACKBAR_MODULE_DETAILS" />
+		<EditCompany
+			:is-open-dialog="openEdition"
+			:company="selectedCompany"
+			:agreement_status="agreement_status"
+			:studies="studies"
+			:careers="careersForm"
+			title="Editar unidad económica" 
+			width="550"
+			@close-dialog="closeDialog"
+			@edit-company="editCompany" />
+		<info-overview
+			:is-open-dialog="openOverview"
+			:company="selectedCompany"
+			:agreement_status="agreement_status"
+			:studies="studies"
+			:careers="careersForm"
+			title="Información de la unidad económica" 
+			width="550"
+			@close-dialog="closeDialog">
+			<template #sectionContent>
+				<v-col cols="12" class="pb-0 mt-5">
+                    <b> Nombre de la unidad económica: </b> {{ selectedCompany.company_name }}
+                </v-col>
+                <v-col cols="12" class="pb-0 mt-2">
+                    <b> Razón social: </b> {{ selectedCompany.company_business_name }}
+                </v-col>
+                <v-col cols="12" class="pb-0 mt-2">
+                    <b> Dirección de la unidad económica: </b> {{ selectedCompany.company_address }}
+                </v-col>
+                <v-col cols="12" class="pb-0 mt-2">
+                    <b> Código postal: </b> {{ selectedCompany.company_postal_code }}
+                </v-col>
+                <v-col cols="12" class="pb-0 mt-2">
+                	<b> Colonia: </b> {{ selectedCompany.company_colony }}
+                </v-col>
+                <v-col cols="12" class="pb-0 mt-2">
+                    <b> Localidad: </b> {{ selectedCompany.company_location }}
+                </v-col>
+                <v-col cols="12" class="pb-0 mt-2">
+                                    <b> Municipio: </b> {{ selectedCompany.company_municipality }}
+                                </v-col>
+                                <v-col cols="12" class="pb-0 mt-2">
+                                    <b> Estado: </b> {{ selectedCompany.company_state }}
+                                </v-col>
+                                <v-col cols="12" class="pb-0 mt-2">
+                                    <b> Número exterior: </b> {{ selectedCompany.company_external_number }}
+                                </v-col>
+                                <v-col cols="12" class="pb-0 mt-2">
+                                    <b> País: </b> {{ selectedCompany.company_country }}
+                                </v-col>
+                                <v-col cols="12" class="pb-0 mt-2">
+                                    <b> Nombre del representante: </b> {{ selectedCompany.company_representative_name }}
+                                </v-col>
+                                <v-col cols="12" class="pb-0 mt-2">
+                                    <b> Nombre del contacto: </b> {{ selectedCompany.company_contact_name }}
+                                </v-col>
+                                <v-col cols="12" class="pb-0 mt-2">
+                                    <b> Estudios máximos: </b> {{ selectedCompany.grade_name }}
+                                </v-col>
+                                <v-col cols="12" class="pb-0 mt-2">
+                                    <b> Cargo o puesto: </b> {{ selectedCompany.company_contact_position }}
+                                </v-col>
+                                <v-col cols="12" class="pb-0 mt-2">
+                                    <b> Teléfono fijo: </b> {{ selectedCompany.company_contact_max_studies }}
+									<div v-if="selectedCompany.company_tel_ext!=null"> <b> Extensión: </b> {{ selectedCompany.company_tel_ext }} </div>
+                                </v-col>
+                                <v-col cols="12" class="pb-0 mt-2">
+                                    <b> Teléfono celular: </b> {{ selectedCompany.company_cel }}
+                                </v-col>
+                                <v-col cols="12" class="pb-0 mt-2">
+                                    <b> Correo: </b> {{ selectedCompany.company_email }}
+                                </v-col>
+                                <v-col cols="12" class="pb-0 mt-2">
+                                    <b> Segundo correo: </b>{{ selectedCompany.company_second_email }}
+                                </v-col>
+								<v-col cols="12" class="pb-0 mt-2">
+                                    <b> Estatus del convenio: </b>{{ selectedCompany.status_name }}
+                                </v-col>
+								<v-col cols="12" class="pb-0 mt-2">
+                                    <b > Fecha del convenio: </b>{{ selectedCompany.status_name }}
+                                </v-col>
+			</template>
+		</info-overview>
+		<success-dialog
+			:is-open-dialog="isSucess"
+			width="550"
+			@close="closeSucessDialog()">
+			<template #sectionContent>
+				Unidad económica editada correctamente.
+			</template>
+		</success-dialog>
 		<modal
 			:open-modal="openModalInfo"
 			:close-modal="closeModalEvent"
@@ -518,91 +309,31 @@
 			:buttons="buttonsModal"
 			:events="eventsModal"
 			:modal-width="500"
-			:button-colors="buttonsColorModal" /> 
-		<personPreview
-			:open-dialog="openModalPersonDetail"
-			:is-loading="callApiPersonPreview"
-			:job="selectedPerson"
-			event-open-modal-contact-info="OPEN_CONTACT_INFO_MODAL_PERSONS_LIST"
-			event-open-report-publication="EVENT_OPEN_REPORT_PUBLICATION_MODAL_PERSONS_LIST"
-			event-close-modal="CLOSE_MODAL_PERSON_DETAIL_PERSONS_LIST" />
-		<!-- <v-dialog
-			v-model="downloadInfoDialog"
-			max-width="350"
-			:persistent="true">
-			<v-card tile class="pa-6">
-				<v-row no-gutters justify="center">
-					<v-progress-circular
-						indeterminate
-						color="#2f80ed" />
-				</v-row>
-				<v-row no-gutters justify="center" class="pt-3">
-					<span style="text-align: center;">
-						Procesando información. La descarga comenzará automáticamente
-					</span>
-				</v-row>
-				<v-row no-gutters justify="center" class="pt-3">
-					<v-btn
-						color="#2F80ED"
-						tile
-						small
-						class="white--text btn__nxt"
-						@click.prevent="closeDownloadInfoDialog()">
-						Aceptar
-					</v-btn>
-				</v-row>
-			</v-card>
-		</v-dialog> -->
+			:button-colors="buttonsColorModal" />
 	</v-container>
 </template>
 <script>
-import BaseDataTable from '@/components/base/Admin/BaseDataTable'
+import axios from "axios";
+import EditCompany from '@/components/base/Editors/EditCompany';
+import InfoOverview from '@/components/dialogs/InfoOverview';
+import BaseDataTable from '@/components/base/Admin/BaseDataTable';
+import SuccessDialog from '@/components/dialogs/SuccessDialog';
 export default {
     components:{
 		BaseDataTable,
+		EditCompany,
+		SuccessDialog,
+		InfoOverview
 	},
 	layout: "adminLayout",
 	data() {
 		return {
+			companies:[],
+			agreement_status:[],
+			studies:[],
 			pageSelected: 0,
-			pagesOptions: [
-				{
-					id: 0,
-					text: "Listado",
-					to: "persons-list"
-				},
-				{
-					id: 1,
-					text: "Verificar",
-					to: "persons-verify"
-				},
-				{
-					id: 2,
-					text: "Licencias",
-					to: "persons-licenses"
-				}
-			],
-			contactInfo: {
-				name: '',
-				email: '',
-				phone: '',
-				institutionName: '',
-				institutionProfilePicutre: '',
-				phoneInstitution: '',
-				emailInstitution: ''
-			},
 			search: '',
 			isEnabled:true,
-			persons: [
-                {
-                    company_name:'Cenidet',
-					company_contact_name:'Perez Perez',
-					company_email:'cenidet@gmail.com',
-					company_tel:'6547362839',
-					company_vacants:'6',
-					company_status:'Activo'
-                }
-            ],
 			personsCsv: [],
 			headers: [
 				{
@@ -644,16 +375,16 @@ export default {
 					text: 'Vacantes',
 					align: 'center',
 					sortable: true,
-					value: 'company_vacants',
+					value: 'company_vacants_number',
 					title: 'Fecha de registro',
-					dataKey: "company_vacants",
+					dataKey: "company_vacants_number",
 					selected: false
 				},
 				{
 					text: 'Vigencia',
 					align: 'center',
 					sortable: true,
-					value: 'company_status',
+					value: 'status_name',
 					title: 'Fecha de registro',
 					dataKey: "company_status",
 					selected: false
@@ -732,7 +463,6 @@ export default {
 			sourceCancelToken: null,
 			searchKey: '',
 			downloadInfoDialog: false,
-
 			currentPage: 1,
 			perPage: 15,
 			totalPages: null,
@@ -743,6 +473,11 @@ export default {
 			filterMaxAge: 80,
 			specialFieldsServer: [],
 			emailVerified: null,
+			token:"9260023c-3deb-4b2d-bb8d-bb595bbff9fc",
+			selectedCompany:{},
+			openEdition:false,
+			openOverview:false,
+			isSucess:false
 		}
 	},
 	watch: {
@@ -760,24 +495,120 @@ export default {
 			this.getPersons(false, val.page, val.itemsPerPage, this.searchKey, false)
 		},
 	},
-	created() {     
+	created() { 
+        this.getCompanies()
+		axios.get('http://localhost:3100/api/agreement_status',{
+            headers:{
+                'authorization':`Bearer ${this.token}`
+            }
+        }).then((response)=>{
+            if(response.status === 200){
+                this.agreement_status=response.data
+            }
+            else{
+            	console.log(response.status)
+            }
+        })  
+
+        axios.get('http://localhost:3100/api/scholar_grades',{
+            headers:{
+                'authorization':`Bearer ${this.token}`
+            }
+        }).then((response)=>{
+            if(response.status === 200){
+                this.studies=response.data
+            }
+            else{
+            	console.log(response.status)
+            }
+        })
+
+        axios.get('http://localhost:3100/api/careers',{
+            headers:{
+                'authorization':`Bearer ${this.token}`
+            }
+        }).then((response)=>{
+            if(response.status === 200){
+                this.careersForm=response.data
+            }
+            else{
+            	console.log(response.status)
+            }
+        })
     },
 	methods: {
-		toPage(id) {
-			this.$router.push({
-				name: this.pagesOptions[id].to
-			})
+		openDialog(company){
+			console.log(this.openEdition,'company')
+			this.selectedCompany=company
+			this.openEdition=true
+			console.log(this.openEdition,'company')
 		},
-		// openContactInfoDialog(item) {
-		// 	this.contactInfo.name = item.name
-		// 	this.contactInfo.email = item.email
-		// 	this.contactInfo.phone = item.phone
-		// 	this.contactInfo.institutionProfilePicutre = item.profilePicutre
-            
-		// 	this.contactInfoDialog = true
-		// },
-		// closeContactInfoDialog() {
-		// 	this.contactInfoDialog = false
+		openOverviewDialog(company){
+			console.log(this.openEdition,'company')
+			this.selectedCompany=company
+			this.openOverview=true
+			console.log(this.openEdition,'company')
+		},
+		closeSucessDialog(){
+			this.isSucess=false
+		},
+		closeDialog(){
+			this.openEdition=false
+			this.openOverview=false
+			console.log(this.openEdition,'company')
+		},
+		getCompanies(){
+			axios.get('http://localhost:3100/api/company_info',{
+				headers:{
+					'authorization':`Bearer ${this.token}`
+				}
+			}).then((response)=>{
+				if(response.status === 200){
+					console.log(response.data)
+					this.companies=response.data
+					console.log(this.companies)
+				}
+				else{
+					console.log(response.status)
+				}
+			}) 
+		},
+		deleteCompany(id){
+			axios.delete(`http://localhost:3100/api/company_info/${id}`, {
+				headers:{
+					'authorization':`Bearer ${this.token}`
+				}
+			}).then((response)=>{
+				if(response.status === 204){
+					console.log('Eliminada')
+					this.getCompanies()
+				}
+				else{
+					console.log(response.status)
+				}
+			}) 
+		},
+		editCompany(company){
+			console.log('info',company)
+			axios.patch(`http://localhost:3100/api/company_info/${company.company_id}`, company, {
+				headers:{
+					'authorization':`Bearer ${this.token}`
+				}
+			}).then((response)=>{
+				console.log('Compania editada',response.status)
+				if(response.status === 200){
+					this.getCompanies()
+					this.isSucess=true;
+				}
+				else{
+					console.log(response.status)
+				}
+			}) 
+		},
+		// toPage(id) {
+		// 	this.$router.push({
+		// 		name: this.pagesOptions[id].to
+		// 	})
 		// },
 		goToProfile(item) {
 			this.callApiPersonPreview = true

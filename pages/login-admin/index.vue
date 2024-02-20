@@ -41,6 +41,7 @@ h1.h1-style {
 }
 .row-style {
   background-color: #F8F7FF;
+  height: 100%;
 }
 .primaryColor--text{
   color:#E07A5F;

@@ -107,9 +107,6 @@
 <script>
 export default {
     layout: 'internalLayout',
-    setup() {
-        
-    },
 }
 </script>
 <style scoped>

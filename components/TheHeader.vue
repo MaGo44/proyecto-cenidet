@@ -40,7 +40,7 @@
                     </v-navigation-drawer>
                 </div>
             <v-toolbar v-else color="white">
-                <v-row v-if="userType=='student'" justify="center">
+                <v-row v-if="userType=='student'" justify="center" class="d-flex align-center">
                     <div v-for="btn in navButtons" :key="btn.name" class="mr-4">
                         <NuxtLink :to="btn.url">
                             <button class="mr-2">
@@ -121,15 +121,6 @@
                                     </v-card>
                                 </v-menu>
                             </v-col>
-                </v-row>
-                <v-row v-else>
-                    <div>
-                        <NuxtLink to="/login-admin">
-                            <button class="mr-2">
-                                <v-toolbar-title class="secondaryColor--text"> Acceso de administrador </v-toolbar-title>
-                            </button>
-                        </NuxtLink>
-                    </div>
                 </v-row>
             </v-toolbar>
         </div>
