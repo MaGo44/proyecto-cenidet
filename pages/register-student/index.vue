@@ -201,7 +201,7 @@ export default {
         }
     },
     created(){
-        axios.get('http://localhost:3100/api/periods',{
+        axios.get('https://api.render.com/deploy/srv-cpco0pm3e1ms73f15r7g?key=2Nh1yQxD5ag/api/periods',{
             headers:{
                 'authorization':`Bearer ${this.token}`
             }
