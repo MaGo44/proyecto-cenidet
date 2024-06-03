@@ -192,7 +192,7 @@ export default {
     layout: "adminLayout",
     data() {
         return{
-            token: '9260023c-3deb-4b2d-bb8d-bb595bbff9fc',
+            token: 'rnd_KG3Zer2wFVUNUVAid7JtmXVGrLjM',
             periods:[],
             genders:[],
             studies:[],
